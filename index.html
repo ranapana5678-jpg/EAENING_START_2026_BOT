@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earn Money - Telegram Mini App</title>
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- Monetag SDK integration -->
+    <script src='//libtl.com/sdk.js' data-zone='11180932' data-sdk='show_11180932'></script>
+
+    <style>
+        :root {
+            --primary-color: #5158f3;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-dark: #22252a;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            color: var(--text-dark);
+            user-select: none;
+        }
+        .container {
+            max-width: 450px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            min-height: 100vh;
+            box-sizing: border-box;
+            padding-bottom: 80px; /* Space for bottom nav */
+            position: relative;
+        }
+        .header {
+            background: linear-gradient(135deg, #5158f3, #7b51f3);
+            color: white;
+            padding: 30px 20px;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .profile-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        .user-info {
+            text-align: left;
+        }
+        .balance-card {
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--text-dark);
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .balance-amount {
+            font-size: 32px;
+            font-weight: bold;
+            color: #5158f3;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            border-top: 1px dashed #ccc;
+            padding-top: 10px;
+            font-size: 14px;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 20px 15px 10px 15px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        /* Tab Contents */
+        .tab-content {
+            display: none;
+            padding: 0 15px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        /* Ad Slots Grid */
+        .ad-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .ad-card {
+            background: #fff;
+            border: 2px solid #eef2f5;
+            border-radius: 16px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            transition: 0.2s;
+        }
+        .ad-card:active { transform: scale(0.97); }
+        .ad-card.slot-1 { border-color: #ffecd2; background: #fffaf5; }
+        .ad-card.slot-2 { border-color: #c3cfe2; background: #f5f8ff; }
+        .ad-card.slot-3 { border-color: #e2f0d9; background: #f9fff5; }
+        .ad-card.slot-4 { border-color: #fce4ec; background: #fff5f8; }
+        
+        .reward-tag {
+            background: rgba(40, 167, 69, 0.1);
+            color: #28a745;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            display: inline-block;
+            margin: 8px 0;
+        }
+        /* Task List */
+        .task-list { margin-top: 10px; }
+        .task-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fff;
+            padding: 15px;
+            border-radius: 16px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .task-btn {
+            background: #22252a;
+            color: #fff;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        /* Form Inputs */
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 450px;
+            background: #22252a;
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+        .nav-item {
+            color: #8e94a0;
+            text-align: center;
+            cursor: pointer;
+            font-size: 20px;
+            flex: 1;
+        }
+        .nav-item.active {
+            color: #ffffff;
+        }
+        .nav-item span {
+            display: block;
+            font-size: 11px;
+            margin-top: 2px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- কমন টপ হেডার -->
+    <div class="header">
+        <div class="profile-section">
+            <div class="avatar">U</div>
+            <div class="user-info">
+                <div id="user-name" style="font-weight: bold;">Tester</div>
+                <div style="font-size: 12px; opacity: 0.8;">ID: <span id="user-id">999999</span></div>
+            </div>
+        </div>
+        <div class="balance-card">
+            <div style="font-size: 13px; color: #666;">TOTAL BALANCE</div>
+            <div class="balance-amount"><span id="user-balance">0.00</span> টাকা</div>
+            <div class="stats">
+                <div>Earned: <span id="total-earned">0.00</span></div>
+                <div>Referrals: <span id="total-ref">0</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ১. হোম ট্যাব (🏠) -->
+    <div id="home-tab" class="tab-content active">
+        <div class="section-title">▶ Daily Ads</div>
+        <div class="ad-grid">
+            <!-- আপনি চাইলে এভাবে ১০টি পর্যন্ত স্লট বাড়াতে পারবেন -->
+            <div class="ad-card slot-1" onclick="triggerMonetagAd(5)">
+                <div style="font-weight:bold;">Ad Slot 1</div>
+                <div class="reward-tag">+৫.০০ টাকা</div>
+                <div style="font-size:12px; color:#777;"><span class="count">0</span>/10 Watched</div>
+            </div>
+            <div class="ad-card slot-2" onclick="triggerMonetagAd(5)">
+                <div style="font-weight:bold;">Ad Slot 2</div>
+                <div class="reward-tag">+৫.০০ টাকা</div>
+                <div style="font-size:12px; color:#777;"><span class="count">0</span>/10 Watched</div>
+            </div>
+            <div class="ad-card slot-3" onclick="triggerMonetagAd(5)">
+                <div style="font-weight:bold;">Ad Slot 3</div>
+                <div class="reward-tag">+৫.০০ টাকা</div>
+                <div style="font-size:12px; color:#777;"><span class="count">0</span>/10 Watched</div>
+            </div>
+            <div class="ad-card slot-4" onclick="triggerMonetagAd(5)">
+                <div style="font-weight:bold;">Ad Slot 4</div>
+                <div class="reward-tag">+৫.০০ টাকা</div>
+                <div style="font-size:12px; color:#777;"><span class="count">0</span>/10 Watched</div>
+            </div>
+        </div>
+
+        <div class="section-title">📋 Tasks</div>
+        <div class="task-list">
+            <div class="task-item">
+                <div>
+                    <div style="font-weight: bold;">Official Channel</div>
+                    <div style="color: #28a745; font-size:14px;">+১০ টাকা</div>
+                </div>
+                <button class="task-btn" onclick="completeTelegramTask()">Start</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ২. রেফারেল ট্যাব (👥) -->
+    <div id="refer-tab" class="tab-content">
+        <div class="section-title">🔗 Your Referral Link</div>
+        <div style="background: #fff; padding: 15px; border-radius:15px; box-shadow:0 2px 8px rgba(0,0,0,0.05); text-align:left;">
+            <p style="font-size:14px; margin-top:0;">এই লিংকটি বন্ধুদের সাথে শেয়ার করুন। তারা যোগদান করলে আপনি প্রতি বন্ধুর জন্য <b>৭০.০০ টাকা</b> বোনাস পাবেন। ✅</p>
+            <input type="text" class="form-control" id="ref-url" value="https://t.me/EAENING_START_2026_BOT?start=999999" readonly>
+            <button class="task-btn" style="width:100%; margin-top:10px; background:#5158f3;" onclick="copyLink()">লিংক কপি করুন</button>
+        </div>
+    </div>
+
+    <!-- ৩. লিডারবোর্ড ট্যাব (🏆) -->
+    <div id="leaderboard-tab" class="tab-content">
+        <div class="section-title">🏆 Leaderboard</div>
+        <div class="task-list">
+            <div class="task-item"><div>#1 Abdur Rahman</div><div style="font-weight:bold;">1041 Refs</div></div>
+            <div class="task-item"><div>#2 Palash Chandro</div><div style="font-weight:bold;">639 Refs</div></div>
+            <div class="task-item"><div>#3 Md Zakaria Islam</div><div style="font-weight:bold;">598 Refs</div></div>
+        </div>
+    </div>
+
+    <!-- ৪. উইথড্র ট্যাব (👤) -->
+    <div id="withdraw-tab" class="tab-content">
+        <div class="section-title">💳 Withdraw</div>
+        <div style="background: #fff; padding: 20px; border-radius:15px; box-shadow:0 2px 8px rgba(0,0,0,0.05);">
+            <div class="form-group">
+                <label>পেমেন্ট মেথড সিলেক্ট করুন</label>
+                <select class="form-control" id="method">
+                    <option value="bkash">BKash (মিনিমাম ২০০০)</option>
+                    <option value="nagad">Nagad (মিনিমাম ২০০০)</option>
+                    <option value="rocket">Rocket (মিনিমাম ২০০০)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Account Number</label>
+                <input type="number" class="form-control" id="acc-num" placeholder="017XXXXXXXX">
+            </div>
+            <div class="form-group">
+                <label>Amount</label>
+                <input type="number" class="form-control" id="withdraw-amount" placeholder="2000">
+            </div>
+            <button class="task-btn" style="width:100%; padding:12px; background:#22252a;" onclick="submitWithdraw()">Request Withdraw</button>
+        </div>
+    </div>
+
+    <!-- বটম নেভিগেশন বার -->
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('home-tab', this)">🏠<span>Home</span></div>
+        <div class="nav-item" onclick="switchTab('refer-tab', this)">👥<span>Refer</span></div>
+        <div class="nav-item" onclick="switchTab('leaderboard-tab', this)">🏆<span>Leaderboard</span></div>
+        <div class="nav-item" onclick="switchTab('withdraw-tab', this)">👤<span>Withdraw</span></div>
+    </div>
+</div>
+
+<script>
+    // Telegram Web App SDK initialization
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    let balance = 0.00;
+    let earned = 0.00;
+
+    // Fetch User Data From Telegram
+    if(tg.initDataUnsafe && tg.initDataUnsafe.user) {
+        document.getElementById('user-name').innerText = tg.initDataUnsafe.user.first_name;
+        document.getElementById('user-id').innerText = tg.initDataUnsafe.user.id;
+        document.getElementById('ref-url').value = "https://t.me/EAENING_START_2026_BOT?start=" + tg.initDataUnsafe.user.id;
+    }
+
+    // Tab Switching Logic
+    function switchTab(tabId, el) {
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+        
+        document.getElementById(tabId).classList.add('active');
+        el.classList.add('active');
+    }
+
+    // Monetag Ad Triggering Function
+    function triggerMonetagAd(rewardAmount) {
+        // Monetag-এর ইন্টিগ্রেটেড শো ফাংশন চেক করা
+        if (typeof show_11180932 === 'function') {
+            show_11180932().then(() => {
+                // বিজ্ঞাপন সফলভাবে দেখা শেষ হলে
+                updateBalance(rewardAmount);
+                alert("বিজ্ঞাপনটি দেখার জন্য ধন্যবাদ! " + rewardAmount + " টাকা আপনার ব্যালেন্সে যোগ হয়েছে।");
+            }).catch((error) => {
+                alert("বিজ্ঞাপন লোড হতে পারেনি। আবার চেষ্টা করুন।");
+            });
+        } else {
+            // যদি লোকাল টেস্ট বা SDK কোনো কারণে লোড না হয় (Fallback)
+            updateBalance(rewardAmount);
+            alert("[Demo Mode] আপনার Monetag বিজ্ঞাপন লোড হচ্ছে... ব্যালেন্সে " + rewardAmount + " টাকা যোগ করা হয়েছে।");
+        }
+    }
+
+    function updateBalance(amount) {
+        balance += amount;
+        earned += amount;
+        document.getElementById('user-balance').innerText = balance.toFixed(2);
+        document.getElementById('total-earned').innerText = earned.toFixed(2);
+    }
+
+    // Telegram Task
+    function completeTelegramTask() {
+        window.open("https://t.me/+2T9AxQsZl4szMTll", "_blank");
+        setTimeout(() => {
+            updateBalance(10);
+            alert("চ্যানেলে জয়েন করার জন্য ১০ টাকা বোনাস দেওয়া হয়েছে!");
+        }, 2000);
+    }
+
+    // Copy Referral Link
+    function copyLink() {
+        const copyText = document.getElementById("ref-url");
+        copyText.select();
+        copyText.setSelectionRange(0, 99999);
+        navigator.clipboard.writeText(copyText.value);
+        alert("লিংকটি কপি হয়েছে! বন্ধুদের শেয়ার করুন।");
+    }
+
+    // Withdraw Request Submission
+    function submitWithdraw() {
+        const method = document.getElementById('method').value;
+        const number = document.getElementById('acc-num').value;
+        const amount = parseFloat(document.getElementById('withdraw-amount').value);
+
+        if(!number || !amount) {
+            alert("অনুগ্রহ করে সঠিক নম্বর এবং অ্যামাউন্ট দিন।");
+            return;
+        }
+        if(amount < 2000) {
+            alert("দুঃখিত, সর্বনিম্ন উইথড্র ২,০০০ টাকা।");
+            return;
+        }
+        if(balance < amount) {
+            alert("আপনার অ্যাকাউন্টে পর্যাপ্ত ব্যালেন্স নেই।");
+            return;
+        }
+
+        balance -= amount;
+        document.getElementById('user-balance').innerText = balance.toFixed(2);
+        alert(`আপনার ${amount} টাকা ${method} এ উইথড্র রিকোয়েস্ট সফল হয়েছে। ২৪ ঘণ্টার মধ্যে পেমেন্ট পেয়ে যাবেন।`);
+    }
+</script>
+
+</body>
+</html>
